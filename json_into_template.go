@@ -6,8 +6,14 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"regexp"
 	"text/template"
 )
+
+func findString(regex, str string) string {
+	re := regexp.MustCompile(regex)
+	return re.FindString(str)
+}
 
 func main() {
 
@@ -18,7 +24,10 @@ func main() {
 	flag.StringVar(&outputFile, "o", "", "Output file")
 	flag.Parse()
 
-	t, err := template.ParseFiles(templateFile)
+	t, err := template.New(templateFile).Funcs(template.FuncMap{
+		"findString": findString,
+	}).ParseFiles(templateFile)
+
 	if err != nil {
 		fmt.Println("Error Reading Template File")
 		panic(err)

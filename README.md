@@ -62,6 +62,17 @@ Apple	-	Red
 Orange	-	Orange
 ```
 
+# Added template functions
+Some generic functions have been added which might make this more practical to use as a command line call.
+
+## findString
+Run standard regex call and return the first matching result. Some characters may have to be escaped such as "\"
+```
+findString "regex" "string"
+
+RESULT="{{ findString "(\\d+\\.\\d+\\.\\d+\\.\\d+)" .value1 }}"
+```
+
 # Other Info
 To maintain template syntax through a process you can escape the encapsulating the {{ in ". E.g.
 ```
