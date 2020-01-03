@@ -32,16 +32,18 @@ func regexReplace(str, matchstring, replacewith string) string {
 
 func main() {
 
-	var inputFile, templateFile, outputFile, feedInVariables string
+	var inputFile, templateFile, outputFile, feedInVariables, unknownVar string
 
 	flag.StringVar(&inputFile, "i", "", "Input JSON file")
 	flag.StringVar(&templateFile, "t", "", "Template file")
 	flag.StringVar(&outputFile, "o", "", "Output file")
 	flag.StringVar(&feedInVariables, "v", "", "Feed In Variables")
+	flag.StringVar(&unknownVar, "u", "Unknown", "No data string replacement")
+
 	flag.Parse()
 	templateName := path.Base(templateFile)
 
-	t, err := template.New(templateName).Funcs(template.FuncMap{
+	t, err := template.New(templateName).Option(fmt.Sprintf("missingkey=%s", unknownVar)).Funcs(template.FuncMap{
 		"findString":   findString,
 		"matchString":  matchString,
 		"regexReplace": regexReplace,
