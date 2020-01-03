@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path"
 	"regexp"
+	"strings"
 	"text/template"
 )
 
@@ -15,17 +17,34 @@ func findString(regex, str string) string {
 	return re.FindString(str)
 }
 
+func matchString(str, matchstring string) bool {
+	if matchstring == str {
+		return true
+	}
+	return false
+}
+
+func regexReplace(str, matchstring, replacewith string) string {
+	var re = regexp.MustCompile(matchstring)
+
+	return re.ReplaceAllString(str, replacewith)
+}
+
 func main() {
 
-	var inputFile, templateFile, outputFile string
+	var inputFile, templateFile, outputFile, feedInVariables string
 
 	flag.StringVar(&inputFile, "i", "", "Input JSON file")
 	flag.StringVar(&templateFile, "t", "", "Template file")
 	flag.StringVar(&outputFile, "o", "", "Output file")
+	flag.StringVar(&feedInVariables, "v", "", "Feed In Variables")
 	flag.Parse()
+	templateName := path.Base(templateFile)
 
-	t, err := template.New(templateFile).Funcs(template.FuncMap{
-		"findString": findString,
+	t, err := template.New(templateName).Funcs(template.FuncMap{
+		"findString":   findString,
+		"matchString":  matchString,
+		"regexReplace": regexReplace,
 	}).ParseFiles(templateFile)
 
 	if err != nil {
@@ -43,6 +62,7 @@ func main() {
 		fmt.Println("Error Unmarshalling JSON File")
 		panic(err)
 	}
+	m = addFeedInVariables(feedInVariables, m)
 
 	if outputFile == "" {
 		if err := t.Execute(os.Stdout, m); err != nil {
@@ -60,4 +80,15 @@ func main() {
 			panic(err)
 		}
 	}
+}
+
+func addFeedInVariables(feedInCSV string, m map[string]interface{}) map[string]interface{} {
+	for _, feedIn := range strings.Split(feedInCSV, ",") {
+		if strings.Contains(feedIn, "=") {
+			parameterSet := strings.Split(feedIn, "=")
+
+			m[parameterSet[0]] = parameterSet[1]
+		}
+	}
+	return m
 }
